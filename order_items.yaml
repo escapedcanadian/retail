@@ -1,0 +1,49 @@
+name: order_items_1
+description: "items purchased within each order"
+sources:
+  - integration_name: Sales-Eng-PoC
+    s3:
+      access_key: ""
+      secret_access: ""
+      prefix: null
+      pattern: rockset/retail/olist_order_items_dataset.csv
+      region: us-west-2
+      bucket: customer-poc-data
+    format_params:
+      json: false
+      csv:
+        encoding: UTF-8
+        firstLineAsColumnNames: true
+        separator: ","
+        columnNames:
+          - "order_id"
+          - "order_item"
+          - "product_id"
+          - "seller_id"
+          - "shipping_limit_date"
+          - "price"
+          - "freight_value"
+        columnTypes:
+          - string
+          - int
+          - string
+          - string
+          - datetime
+          - float
+          - float
+field_mappings:
+  - name: primaryKey
+    input_fields:
+      - field_name: order_id
+        if_missing: SKIP
+        is_drop: false
+        param: order_id_str
+      - field_name: order_item
+        if_missing: SKIP
+        is_drop: false
+        param: order_item
+    output_field:
+      field_name: _id
+      value: 
+        sql: "CONCAT(:order_id_str, ':', CAST(:order_item as string))"
+      on_error: FAIL

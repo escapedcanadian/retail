@@ -1,0 +1,56 @@
+name: geolocation_1
+description: "Brazilian zip codes and its lat/lng coordinates."
+sources:
+  - integration_name: Sales-Eng-PoC
+    s3:
+      access_key: ""
+      secret_access: ""
+      prefix: null
+      pattern: rockset/retail/olist_geolocation_dataset.csv
+      region: us-west-2
+      bucket: customer-poc-data
+    format_params:
+      json: false
+      csv:
+        encoding: UTF-8
+        firstLineAsColumnNames: true
+        separator: ","
+        columnNames:
+          - "geolocation_zip_code_prefix"
+          - "geolocation_lat"
+          - "geolocation_lng"
+          - "geolocation_city"
+          - "geolocation_state"
+        columnTypes:
+          - int
+          - float
+          - float
+          - string
+          - string
+field_mappings:
+  - name: primaryKey
+    input_fields:
+      - field_name: geolocation_zip_code_prefix
+        if_missing: SKIP
+        is_drop: false
+        param: id
+    output_field:
+      field_name: _id
+      value: 
+        sql: "CAST(:id as string)"
+      on_error: FAIL
+  - name: geo
+    input_fields:
+      - field_name: geolocation_lat
+        if_missing: SKIP
+        is_drop: false
+        param: lat_geo_str
+      - field_name: geolocation_lng
+        if_missing: SKIP
+        is_drop: false
+        param: lon_geo_str
+    output_field:
+      field_name: geo_pt
+      value: 
+        sql: "ST_GEOGPOINT(CAST(:lon_geo_str as float), CAST(:lat_geo_str as float))"
+      on_error: FAIL

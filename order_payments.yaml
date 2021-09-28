@@ -1,0 +1,45 @@
+name: order_payments_1
+description: "orders payment options."
+sources:
+  - integration_name: Sales-Eng-PoC
+    s3:
+      access_key: ""
+      secret_access: ""
+      prefix: null
+      pattern: rockset/retail/olist_order_payments_dataset.csv
+      region: us-west-2
+      bucket: customer-poc-data
+    format_params:
+      json: false
+      csv:
+        encoding: UTF-8
+        firstLineAsColumnNames: true
+        separator: ","
+        columnNames:
+          - "order_id"
+          - "payment_sequential"
+          - "payment_type"
+          - "payment_installments"
+          - "payment_value"
+        columnTypes:
+          - string
+          - int
+          - string
+          - int
+          - float
+field_mappings:
+  - name: primaryKey
+    input_fields:
+      - field_name: order_id
+        if_missing: SKIP
+        is_drop: false
+        param: order_id_str
+      - field_name: payment_sequential
+        if_missing: SKIP
+        is_drop: false
+        param: seq
+    output_field:
+      field_name: _id
+      value: 
+        sql: "CONCAT(:order_id_str, ':', CAST(:seq as string))"
+      on_error: FAIL

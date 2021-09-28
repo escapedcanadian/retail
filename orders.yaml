@@ -1,0 +1,58 @@
+name: orders_1
+description: "Core order dataset"
+sources:
+  - integration_name: Sales-Eng-PoC
+    s3:
+      access_key: ""
+      secret_access: ""
+      prefix: null
+      pattern: rockset/retail/olist_orders_dataset.csv
+      region: us-west-2
+      bucket: customer-poc-data
+    format_params:
+      json: false
+      csv:
+        encoding: UTF-8
+        firstLineAsColumnNames: true
+        separator: ","
+        columnNames:
+          - "order_id"
+          - "customer_id"
+          - "status"
+          - "purchased"
+          - "approved"
+          - "delivered_carrier"
+          - "delivered_customer"
+          - "estimated_delivery"
+        columnTypes:
+          - string
+          - string
+          - string
+          - datetime
+          - datetime
+          - datetime
+          - datetime
+          - datetime
+field_mappings:
+  - name: primaryKey
+    input_fields:
+      - field_name: order_id
+        if_missing: SKIP
+        is_drop: false
+        param: id_str
+    output_field:
+      field_name: _id
+      value: 
+        sql: ":id_str"
+      on_error: FAIL
+  - name: eventTime
+    input_fields:
+      - field_name: purchased
+        if_missing: SKIP
+        is_drop: false
+        param: purch
+    output_field:
+      field_name: _event_time
+      value: 
+        sql: "CAST(:purch as datetime) AT TIME ZONE 'America/Sao_Paulo'"
+      on_error: FAIL

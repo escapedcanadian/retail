@@ -1,0 +1,67 @@
+name: order_reviews_1
+description: "reviews made by the customers"
+sources:
+  - integration_name: Sales-Eng-PoC
+    s3:
+      access_key: ""
+      secret_access: ""
+      prefix: null
+      pattern: rockset/retail/olist_order_reviews_dataset.csv
+      region: us-west-2
+      bucket: customer-poc-data
+    format_params:
+      json: false
+      csv:
+        encoding: UTF-8
+        firstLineAsColumnNames: true
+        separator: ","
+        columnNames:
+          - "review_id"
+          - "order_id"
+          - "score"
+          - "title"
+          - "message"
+          - "created"
+          - "answered"
+        columnTypes:
+          - string
+          - string
+          - int
+          - string
+          - string
+          - datetime
+          - datetime
+field_mappings:
+  - name: primaryKey
+    input_fields:
+      - field_name: review_id
+        if_missing: SKIP
+        is_drop: false
+        param: id_str
+    output_field:
+      field_name: _id
+      value: 
+        sql: ":id_str"
+      on_error: FAIL
+  - name: title
+    input_fields:
+      - field_name: title
+        if_missing: SKIP
+        is_drop: true
+        param: title_str
+    output_field:
+      field_name: title
+      value: 
+        sql: "IF(LENGTH(:title_str) < 1, null, :title_str)"
+      on_error: FAIL
+  - name: message
+    input_fields:
+      - field_name: message
+        if_missing: SKIP
+        is_drop: true
+        param: msg_str
+    output_field:
+      field_name: message
+      value: 
+        sql: "IF(LENGTH(:msg_str) < 1, null, :msg_str)"
+      on_error: FAIL
